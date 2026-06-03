@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/maintenance-system/static/css/main.6bb254a1.css",
-    "main.js": "/maintenance-system/static/js/main.a5299928.js",
-    "index.html": "/maintenance-system/index.html",
-    "main.6bb254a1.css.map": "/maintenance-system/static/css/main.6bb254a1.css.map",
-    "main.a5299928.js.map": "/maintenance-system/static/js/main.a5299928.js.map"
+    "main.css": "/campus-fix/static/css/main.6bb254a1.css",
+    "main.js": "/campus-fix/static/js/main.a5299928.js",
+    "index.html": "/campus-fix/index.html",
+    "main.6bb254a1.css.map": "/campus-fix/static/css/main.6bb254a1.css.map",
+    "main.a5299928.js.map": "/campus-fix/static/js/main.a5299928.js.map"
   },
   "entrypoints": [
     "static/css/main.6bb254a1.css",
