@@ -1,61 +1,88 @@
 const express = require('express');
-const pool = require('../db/pool');
-const auth = require('../middleware/auth');
+const authMiddleware = require('../middleware/auth');
+const db = require('../db/pool');
 const upload = require('../middleware/upload');
+
 const router = express.Router();
 
-// Create a request (with file upload)
-router.post('/', auth, upload.single('image'), async (req, res) => {
-  const { title, location, description } = req.body;
-  const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+// GET all requests (admin sees all, user sees own)
+router.get('/', authMiddleware, async (req, res) => {
+  const isAdmin = req.user.role === 'admin';
+  let query = 'SELECT * FROM maintenance_requests';
+  const params = [];
+  if (!isAdmin) {
+    query += ' WHERE user_id = $1';
+    params.push(req.user.id);
+  }
+  query += ' ORDER BY created_at DESC';
+  const result = await db.query(query, params);
+  res.json(result.rows);
+});
+
+// POST new request with optional image
+router.post('/', authMiddleware, upload.single('image'), async (req, res) => {
+  const { title } = req.body;
+  if (!title) {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+  const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
   try {
-    const result = await pool.query(
-      `INSERT INTO requests (title, location, description, image_url, user_id)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [title, location, description, image_url, req.user.id]
+    const result = await db.query(
+      'INSERT INTO maintenance_requests (title, user_id, image_url) VALUES ($1, $2, $3) RETURNING *',
+      [title, req.user.id, imageUrl]
     );
-    res.json(result.rows[0]);
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create request' });
   }
 });
 
-// Get all requests (with user name)
-router.get('/', async (req, res) => {
+// PUT update request (admin only)
+router.put('/:id', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+  const { status, assigned_to } = req.body;
+  const result = await db.query(
+    'UPDATE maintenance_requests SET status = $1, assigned_to = $2 WHERE id = $3 RETURNING *',
+    [status, assigned_to, req.params.id]
+  );
+  res.json(result.rows[0]);
+});
+
+// DELETE a maintenance request (admin only)
+router.delete('/:id', authMiddleware, async (req, res) => {
+  // Only admins can delete
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invalid request ID' });
+  }
   try {
-    const result = await pool.query(
-      `SELECT r.*, u.name FROM requests r
-       JOIN users u ON r.user_id = u.id
-       ORDER BY r.created_at DESC`
-    );
-    res.json(result.rows);
+    // Optional: get image_url to delete file
+    const imageResult = await db.query('SELECT image_url FROM maintenance_requests WHERE id = $1', [id]);
+    if (imageResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+    const imageUrl = imageResult.rows[0].image_url;
+    // Delete from database
+    await db.query('DELETE FROM maintenance_requests WHERE id = $1', [id]);
+    // Delete image file if exists (optional)
+    if (imageUrl) {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(__dirname, '..', imageUrl);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error('Failed to delete image file:', err);
+      });
+    }
+    res.status(204).send(); // No content
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Delete error:', err);
+    res.status(500).json({ error: 'Failed to delete request' });
   }
 });
-
-// Update request status
-router.put('/:id', auth, async (req, res) => {
-  const { status } = req.body;
-  try {
-    const result = await pool.query(
-      'UPDATE requests SET status = $1 WHERE id = $2 RETURNING *',
-      [status, req.params.id]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Delete a request
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    await pool.query('DELETE FROM requests WHERE id = $1', [req.params.id]);
-    res.json({ msg: 'Request deleted' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 module.exports = router;
