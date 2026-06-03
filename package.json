@@ -9,7 +9,7 @@
     "react-router-dom": "^6.20.0",
     "react-scripts": "5.0.1"
   },
-  "homepage": "https://Shepherd-thee-developer.github.io/maintenance-system",
+  "homepage": "https://Shepherd-thee-developer.github.io/campus-fix",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
