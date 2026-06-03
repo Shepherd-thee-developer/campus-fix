@@ -3,37 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^1.6.0",
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "gh-pages": "^6.3.0",
-    "jsonwebtoken": "^9.0.3",
-    "multer": "^2.1.1",
-    "pg": "^8.21.0",
+    "axios": "^1.16.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "react-scripts": "5.0.1"
   },
+  "homepage": "https://Shepherd-thee-developer.github.io/maintenance-system",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
-  "homepage": "https://Shepherd-thee-developer.github.io/maintenance-system",
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
