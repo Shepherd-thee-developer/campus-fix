@@ -1,14 +1,10 @@
 import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth, AuthProvider } from './AuthContext';
 import Login from './Login';
 import Register from './Register';
 import UserDashboard from './UserDashboard';
 import AdminDashboard from './AdminDashboard';
-import { HashRouter } from 'react-router-dom';
-// ...
-<HashRouter>
-  <App />
-</HashRouter>
 
 // Component to handle routing based on auth state
 const AppRoutes = () => {
@@ -32,11 +28,9 @@ const AppRoutes = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }
 
